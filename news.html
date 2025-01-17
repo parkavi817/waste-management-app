@@ -1,0 +1,185 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Waste Management News</title>
+  <link rel="stylesheet" href="styles.css">
+  <style>
+    body {
+      font-family: 'Arial', sans-serif;
+      background: linear-gradient(135deg, #f0f9f0, #a7e4a8);
+      margin: 0;
+      padding: 0;
+    }
+
+    .container {
+      max-width: 900px;
+      margin: 50px auto;
+      background-color: #ffffff;
+      border-radius: 15px;
+      box-shadow: 0 6px 15px rgba(0, 0, 0, 0.2);
+      padding: 30px;
+      text-align: center;
+      animation: fadeInContainer 1.5s ease-in-out;
+    }
+
+    @keyframes fadeInContainer {
+      from {
+        opacity: 0;
+        transform: translateY(-20px);
+      }
+      to {
+        opacity: 1;
+        transform: translateY(0);
+      }
+    }
+
+    h1 {
+      color: #2c662d;
+      font-size: 2.5em;
+      margin-bottom: 20px;
+      animation: fadeIn 2s;
+    }
+
+    img {
+      max-width: 100%;
+      height: auto;
+      border-radius: 10px;
+      margin-bottom: 20px;
+      box-shadow: 0 4px 10px rgba(0, 0, 0, 0.3);
+      animation: slideInImage 1.5s;
+    }
+
+    @keyframes slideInImage {
+      from {
+        transform: translateY(-50px);
+        opacity: 0;
+      }
+      to {
+        transform: translateY(0);
+        opacity: 1;
+      }
+    }
+
+    @keyframes fadeIn {
+      from {
+        opacity: 0;
+      }
+      to {
+        opacity: 1;
+      }
+    }
+
+    #news-container p {
+      color: #333;
+      margin-bottom: 30px;
+      text-align: justify;
+      animation: slideIn 1.5s;
+    }
+
+    @keyframes slideIn {
+      from {
+        transform: translateY(50px);
+        opacity: 0;
+      }
+      to {
+        transform: translateY(0);
+        opacity: 1;
+      }
+    }
+
+    #news-container p b {
+      color: #2c662d;
+      font-size: 1.2em;
+    }
+
+    .button {
+      display: inline-block;
+      text-decoration: none;
+      background: linear-gradient(135deg, #2c662d, #3a8b3f);
+      color: white;
+      padding: 12px 25px;
+      border-radius: 8px;
+      font-weight: bold;
+      margin: 10px;
+      transition: transform 0.3s, background-color 0.3s ease;
+      animation: pulseButton 2s infinite;
+    }
+
+    @keyframes pulseButton {
+      0%, 100% {
+        transform: scale(1);
+      }
+      50% {
+        transform: scale(1.05);
+      }
+    }
+
+    .button:hover {
+      transform: scale(1.1);
+      background-color: #4fa84d;
+    }
+
+    .external-links {
+      margin: 20px 0;
+      text-align: left;
+    }
+
+    .external-links a {
+      color: #007bff;
+      text-decoration: none;
+      margin-bottom: 10px;
+      display: block;
+      font-weight: bold;
+      transition: color 0.3s, transform 0.3s;
+    }
+
+    .external-links a:hover {
+      color: #0056b3;
+      transform: scale(1.05);
+    }
+
+    @media (max-width: 600px) {
+      .container {
+        padding: 20px;
+      }
+
+      h1 {
+        font-size: 1.8em;
+      }
+    }
+  </style>
+</head>
+<body>
+  <div class="container">
+    <img src="https://tse4.mm.bing.net/th?id=OIP.vYvYhvEDUH8RXDkfmp1StgHaEd&pid=Api&P=0&h=180" alt="Waste Management" />
+    <h1>Latest News on Waste Management</h1>
+    <div id="news-container">
+        <p><b>1. Conversion of Non-Recyclable Waste into Fuel in the UK</b><br><br>
+           In a UK first, non-recyclable waste from Uist and Barra in the Western Isles will be converted into green fuel
+           using fast-acting bacteria as part of a £1.2 million initiative.
+        </p> 
+           
+        <p><b>2. Global Efforts to Reduce Plastic Waste</b><br><br>
+           The UK exports significant amounts of plastic waste to Turkey for recycling, but much of it ends up polluting the
+           Mediterranean Sea.
+        </p>
+            
+        <p><b>3. Launch of Textile Waste Mapping Tool</b><br><br>
+           Fashion For Good has launched a mapping tool named World of Waste to aggregate and display global data on textile waste.
+        </p>
+    </div>
+    <div class="external-links">
+      <h2>Learn More:</h2>
+      <a href="https://www.unep.org/reducing-plastic-pollution-through-extended-producer-responsibility" target="_blank">UNEP - Reducing Plastic Pollution</a>
+      <a href="https://www.waste360.com/" target="_blank">Waste360 - Latest Waste Management News</a>
+      <a href="https://www.globalcitizen.org/en/content/plastic-waste-government-initiatives/" target="_blank">Global Citizen - Plastic Waste Solutions</a>
+    </div>
+    <div>
+      <a href="index.html" class="button">Back to Home</a>
+      <a href="waste-management.html" class="button">Next</a>
+    </div>
+  </div>
+</body>
+</html>

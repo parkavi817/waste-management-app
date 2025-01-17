@@ -1,0 +1,603 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Waste Management</title>
+  <style>
+    body {
+      font-family: Arial, sans-serif;
+      background: linear-gradient(135deg, #e8f5e9, #a5d6a7);
+      margin: 0;
+      padding: 0;
+    }
+
+    .container {
+      max-width: 900px;
+      margin: 30px auto;
+      background-color: #ffffff;
+      border-radius: 15px;
+      box-shadow: 0 6px 15px rgba(0, 0, 0, 0.2);
+      padding: 20px 30px;
+      animation: fadeInContainer 1.5s ease-in-out;
+      text-align: center;
+    }
+
+    @keyframes fadeInContainer {
+      from {
+        opacity: 0;
+        transform: translateY(-20px);
+      }
+      to {
+        opacity: 1;
+        transform: translateY(0);
+      }
+    }
+
+    h1, h2 {
+      color: #2c662d;
+      margin-bottom: 15px;
+    }
+
+    h2 {
+      margin-top: 30px;
+    }
+
+    .button {
+      display: inline-block;
+      text-decoration: none;
+      background-color: #2c662d;
+      color: white;
+      padding: 12px 25px;
+      border-radius: 8px;
+      font-weight: bold;
+      text-align: center;
+      margin-top: 20px;
+      transition: background-color 0.3s ease, transform 0.3s;
+    }
+
+    .button:hover {
+      background-color: #3a8b3f;
+      transform: scale(1.05);
+    }
+
+    input[type="text"], input[type="file"] {
+      width: calc(100% - 20px);
+      padding: 10px;
+      border: 1px solid #ccc;
+      border-radius: 5px;
+      margin: 10px 0;
+      font-size: 1rem;
+    }
+
+    .suggestions {
+      margin-top: 20px;
+      padding: 15px;
+      background-color: #f8f9fa;
+      border-radius: 8px;
+      box-shadow: 0 4px 10px rgba(0, 0, 0, 0.1);
+      animation: fadeIn 1.5s;
+    }
+
+    .suggestion {
+      margin-bottom: 10px;
+      color: #2c662d;
+      font-weight: bold;
+    }
+
+    .options {
+      display: flex;
+      justify-content: center;
+      gap: 20px;
+      margin-bottom: 20px;
+    }
+
+    img {
+      width: 100px;
+      height: 100px;
+      margin-top: 20px;
+      border-radius: 50%;
+      animation: bounce 2s infinite;
+    }
+
+    @keyframes bounce {
+      0%, 100% {
+        transform: translateY(0);
+      }
+      50% {
+        transform: translateY(-10px);
+      }
+    }
+
+    @keyframes fadeIn {
+      from {
+        opacity: 0;
+      }
+      to {
+        opacity: 1;
+      }
+    }
+
+    .action-buttons {
+      margin-top: 20px;
+      display: none;
+    }
+
+    .action-buttons button {
+      background: #00796b;
+      margin: 10px;
+    }
+
+    .action-buttons button:hover {
+      background: #004d40;
+    }
+
+    @media (max-width: 600px) {
+      .container {
+        padding: 15px;
+      }
+      .options {
+        flex-direction: column;
+      }
+    }
+  </style>
+</head>
+<body>
+  <div class="container">
+    <h1>Waste Management</h1>
+    <img src="https://tse1.mm.bing.net/th?id=OIP.OvvUd4xe0uzQSubVXW_W3wHaHa&pid=Api&P=0&h=180" alt="Waste Management Icon">
+    <p>Learn how to effectively manage various types of waste, including e-waste, glass, plastics, woods, medical, and more.</p>
+    <div class="options">
+      <button id="manual-input" class="button">Manual Input</button>
+      <button id="upload-image" class="button">Upload Image</button>
+    </div>
+    <div id="manual-form" style="display: none;">
+      <h2>Manual Input</h2>
+      <input type="text" id="waste-input" placeholder="Enter waste material (e.g., plastic, glass, metal etc.)" />
+      <p>Please include the type of waste, such as plastic, glass, metal, etc., before entering the waste material.</p> 
+      <button id="submit-manual" class="button">Submit</button>
+    </div>
+    
+    <div id="upload-form" style="display: none;">
+      <h2>Upload Image</h2>
+      <input type="file" id="file-upload" accept="image/*" />
+      <button id="submit-upload" class="button">Submit</button>
+    </div>
+    <div id="suggestions" class="suggestions"></div>
+    <div id="action-buttons" class="action-buttons">
+      <button class="button" id="reuse-button">Reuse</button>
+      <button class="button" id="recycle-button">Recycle</button>
+      <button class="button" id="disposal-button">Disposal</button>
+    </div>
+    <a href="index.html" class="button">Back to Home</a>
+</div>
+
+<script>
+   document.getElementById("manual-input").addEventListener("click", () => {
+    document.getElementById("manual-form").style.display = "block";
+    document.getElementById("upload-form").style.display = "none";
+  });
+
+  document.getElementById("upload-image").addEventListener("click", () => {
+    document.getElementById("upload-form").style.display = "block";
+    document.getElementById("manual-form").style.display = "none";
+  });
+
+  
+  const classifyImage = async (file) => {
+    const formData = new FormData();
+    formData.append("image", file);
+
+    try {
+      const response = await fetch("http://127.0.0.1:5000/predict", {
+        method: "POST",
+        body: formData,
+      });
+
+      const data = await response.json();
+      console.log("Predictions:", data.prediction);
+      handlePredictions(data.prediction);
+    } catch (error) {
+      console.error("Error during image classification:", error);
+    }
+  };
+
+  
+  const handlePredictions = (prediction) => {
+    console.log(`Predicted Class: ${prediction}`);
+    if (prediction.includes("plastic") || prediction.includes('plastic cover') || prediction.includes('plastic bucket')) {
+      generateSuggestions("plastic");
+    } else if (prediction.includes("glass")) {
+      generateSuggestions("glass");
+    } else if (prediction.includes("cloth")) {
+      generateSuggestions("clothing"); 
+    }else if (prediction.includes('machine') || prediction.includes('electronics')) {
+      generateSuggestions('machine');
+    } else if (prediction.includes('kitchen waste') ||prediction.includes('food') || prediction.includes('organic') 
+    || prediction.includes('peels')) {
+      generateSuggestions('kitchen');
+    } else if (prediction.includes('hospital') || prediction.includes('bandage') || prediction.includes('suture') || 
+      prediction.includes('syringes') || prediction.includes('cotton balls') || prediction.includes('gauze') || prediction.includes('surgical mask')
+      || prediction.includes('medical equipment')) {
+        generateSuggestions('hospital');
+    } else if (prediction.includes('rubber')) {
+      generateSuggestions('rubber');
+    }else if (prediction.includes('excretion') || prediction.includes('cow dung')) {
+      generateSuggestions('dung'); 
+    }else if (
+      prediction.includes('metal') ||
+      prediction.includes('iron') ||
+      prediction.includes('scrap metal') ||
+      prediction.includes('steel')
+    ) {
+      generateSuggestions('metal'); 
+    }else if (prediction.includes('wood') || prediction.includes('furniture')|| prediction.includes('timber') || prediction.includes('bench')) {
+      generateSuggestions('wood');} 
+    else if (prediction.includes("metal")) {
+      generateSuggestions("metal");
+    } else if (prediction.includes("battery") || prediction.includes('machine') ){
+      generateSuggestions("battery");
+    } else if (prediction.includes('e-waste') || prediction.includes('electronics')) {
+      generateSuggestions('e-waste'); 
+    } else if(prediction.includes('mobile') || prediction.includes('smartphone') || prediction.includes('charger')) {
+      generateSuggestions('mobile');
+    } else if (prediction.includes('wire')) {
+      generateSuggestions('wire');
+    }else if (prediction.includes('aluminium') || prediction.includes('copper')) {
+      generateSuggestions('copper');
+    } else if (prediction.includes('zinc')) {
+      generateSuggestions('zinc');
+    } else if (prediction.includes('lead')) {
+      generateSuggestions('lead');
+    }else if (prediction.includes('book')) {
+      generateSuggestions('book');
+    }else if (prediction.includes('pen')) {
+      generateSuggestions('pen');
+    }else if (prediction.includes('pencil')) {
+      generateSuggestions('pencil');
+    }else if (prediction.includes('paper')) {
+      generateSuggestions('paper');
+    }else if (prediction.includes('scale') || prediction.includes('geometry box') || prediction.includes('compass') || 
+    prediction.includes('protractor')) {
+      generateSuggestions('lead');
+    }else if (prediction.includes('vessel') || prediction.includes('cookware') || prediction.includes('utensils')) {
+      generateSuggestions('vessel');
+    }else if (prediction.includes('exam pad') || prediction.includes('clipboard')) {
+      generateSuggestions('exam pad');
+    }else if (prediction.includes('eraser')) {
+      generateSuggestions('eraser');
+    }else if (prediction.includes('light bulb')) {
+      generateSuggestions('light bulb');
+    }else if (prediction.includes('fan') || prediction.includes('table fan')) {
+      generateSuggestions('table fan');
+    }else if (prediction.includes('electric switch')) {
+      generateSuggestions('electric switch');
+    }else if (prediction.includes('bag')) {
+      generateSuggestions('bag');
+    }else if (prediction.includes('backpack')) {
+      generateSuggestions('backpack');
+    }else if (prediction.includes('slipper') || prediction.include('footware')) {
+      generateSuggestions('slipper');
+    }else if (prediction.includes('toothbrush')) {
+      generateSuggestions('toothbrush');
+    }else if (prediction.includes('rope')) {
+      generateSuggestions('rope');
+    }else if (prediction.includes('sharpener')) {
+      generateSuggestions('sharpener');
+    }else {
+      generateSuggestions("unknown");
+    }
+  };
+  document.getElementById('submit-manual').addEventListener('click', () => {
+      const wasteInput = document.getElementById('waste-input').value.toLowerCase();
+      generateSuggestions(wasteInput);
+    });
+
+    document.getElementById('submit-upload').addEventListener('click', () => {
+      const fileInput = document.getElementById('file-upload');
+      const file = fileInput.files[0];
+      if (file) {
+        generateSuggestions(file.name.toLowerCase());
+      }
+    });
+ 
+  const generateSuggestions = (input) => {
+    let suggestions = [];
+    let reuseIdeas = '';
+    let recycleIdeas = '';
+    let disposalIdeas = '';
+
+
+    if (input.includes('plastic') ||input.includes('water bottle') 
+    ||input.includes('cover') ||input.includes('box') ||input.includes('paper cup') ||input.includes('packet')){
+      suggestions = ['Recycle at local centers', 'Repurpose into DIY crafts', 'Avoid single-use plastics'];
+      reuseIdeas = 'Use plastic containers for organizing.';
+      recycleIdeas = 'Drop off plastics at dedicated recycling centers.';
+      disposalIdeas = 'Ensure it doesn’t end up in water sources.';
+    } 
+    else if (input.includes('aluminum') || input.includes('copper')) {
+        suggestions = ['Recycle at metal recycling facilities', 'Repurpose for home or industrial use', 'Sell to scrap dealers for reuse'];
+        reuseIdeas = 'Repurpose aluminum or copper for creative DIY projects or small repairs.';
+        recycleIdeas = 'Recycle through authorized facilities specializing in aluminum and copper recycling.';
+        disposalIdeas = 'Dispose of at scrap yards or designated recycling centers for metals.';
+      }
+    else if (input.includes('glass')) {
+      suggestions = ['Reuse as jars or vases', 'Recycle at glass collection points', 'Avoid breaking glass to prevent hazards'];
+      reuseIdeas = 'Transform glass bottles into stylish decor.';
+      recycleIdeas = 'Take to local recycling plants.';
+      disposalIdeas = 'Handle broken glass carefully and dispose of safely.';
+    }else if (input.includes('exam pad') || input.includes('clipboard')) {
+  suggestions = ['Donate to schools or students in need', 'Repurpose for crafts or home use', 'Recycle at facilities that accept mixed materials'];
+  reuseIdeas = 'Use the clipboard as a surface for drawing or painting.';
+  recycleIdeas = 'Separate plastic and metal parts for appropriate recycling.';
+  disposalIdeas = 'Dispose of in mixed-material waste collection points if not reusable.';
+}else if (input.includes('eraser') || input.includes('rubber eraser')) {
+  suggestions = ['Donate unused erasers to schools or charities', 'Repurpose for cleaning surfaces', 'Dispose of in general waste bins if no recycling options exist'];
+  reuseIdeas = 'Use old erasers to clean scuff marks from floors or walls.';
+  recycleIdeas = 'Check if local facilities recycle rubber materials.';
+  disposalIdeas = 'Dispose of in regular waste if reuse or recycling is not possible.';
+}
+else if (input.includes('vessel') || input.includes('utensil') || input.includes('cookware')) {
+  suggestions = ['Donate usable utensils to shelters or charities', 'Repurpose as plant pots or decorative items', 'Recycle at scrap metal facilities for metal utensils'];
+  reuseIdeas = 'Use old utensils as containers for storing small items.';
+  recycleIdeas = 'Recycle through facilities that accept metal or stainless steel.';
+  disposalIdeas = 'Dispose of non-recyclable utensils responsibly.';
+}else if (input.includes('tubelight') || input.includes('bulb') || input.includes('light bulb')) {
+  suggestions = ['Recycle at electronic or hazardous waste centers', 'Repurpose for crafts or DIY projects', 'Dispose of carefully to avoid breakage'];
+  reuseIdeas = 'Use old bulbs for creative DIY decorations or projects.';
+  recycleIdeas = 'Take to e-waste centers or recycling points for hazardous materials.';
+  disposalIdeas = 'Dispose of safely in designated bins to prevent injury or contamination.';
+}else if (input.includes('fan') || input.includes('ceiling fan') || input.includes('table fan')) {
+  suggestions = ['Donate functioning fans to those in need', 'Repurpose parts like blades for DIY projects', 'Recycle at e-waste or metal recycling centers'];
+  reuseIdeas = 'Use fan parts like blades or motors in creative DIY projects.';
+  recycleIdeas = 'Recycle through e-waste collection programs or metal scrap yards.';
+  disposalIdeas = 'Dispose of broken fans at e-waste disposal points.';
+}else if (input.includes('switch') || input.includes('electric switch') || input.includes('light switch')) {
+  suggestions = ['Recycle at e-waste recycling centers', 'Repurpose parts for DIY projects', 'Dispose of safely to avoid hazards'];
+  reuseIdeas = 'Use switches in DIY electronics or art projects.';
+  recycleIdeas = 'Recycle through authorized e-waste recycling centers.';
+  disposalIdeas = 'Dispose of non-working switches responsibly at e-waste collection points.';
+}else if (input.includes('bag') && !input.includes('school')) {
+  suggestions = ['Donate usable bags to charities or thrift stores', 'Repurpose for storage or creative DIY projects', 'Recycle at facilities that accept textiles or synthetic materials'];
+  reuseIdeas = 'Use old bags for organizing items at home or as reusable shopping bags.';
+  recycleIdeas = 'Recycle through textile or synthetic recycling centers if made of suitable material.';
+  disposalIdeas = 'Dispose of non-reusable bags responsibly in designated waste bins.';
+}else if (input.includes('school bag') || input.includes('backpack')) {
+  suggestions = ['Donate to underprivileged students or organizations supporting education', 'Repurpose as storage for tools or supplies', 'Recycle at textile or synthetic recycling facilities'];
+  reuseIdeas = 'Use old school bags to store books, toys, or other items at home.';
+  recycleIdeas = 'Recycle at facilities that accept fabric or synthetic materials from old bags.';
+  disposalIdeas = 'Dispose of unusable school bags at designated waste collection points.';
+}else if (input.includes('sharpener') || input.includes('sharpners')) {
+  suggestions = [
+    'Donate functional sharpeners to schools or community centers',
+    'Repurpose metal or plastic parts for DIY projects',
+    'Recycle at facilities that accept small plastic or metal items'
+  ];
+  reuseIdeas = 'Use old sharpeners for crafting or as small utility tools.';
+  recycleIdeas = 'Separate the metal blade and plastic body, and recycle them appropriately.';
+  disposalIdeas = 'Dispose of in designated recycling bins for small mixed materials if not reusable.';
+} else if (input.includes('wood') || input.includes('wooden chair') || input.includes('table') || input.includes('door')
+    ||input.includes('bench') ||input.includes('furniture') ||input.includes('chair')) {
+      suggestions = ['Repurpose into furniture', 'Use for compost or mulch', 'Avoid burning treated wood'];
+      reuseIdeas = 'Create DIY wood projects like shelves.';
+      recycleIdeas = 'Wood scraps can be recycled into paper products.';
+      disposalIdeas = 'Avoid burning treated wood, which can release toxic fumes.';
+    }     else if (input.includes('e-waste') || input.includes('tv') || input.includes('mobile') || input.includes('battery') 
+    || input.includes('laptop') || input.includes('electric') || input.includes('computer') || input.includes('refrigerator')||
+    input.includes('air conditioner') || input.includes('washing machine') ||  input.includes('toaster') || input.includes('microwave')
+    || input.includes('oven') || input.includes('dishwasher') ||  input.includes('machine') || input.includes('remote')
+    ||input.includes('machine')){
+      suggestions = ['Drop off at certified e-waste recycling centers', 'Reuse working parts in DIY electronics', 'Avoid improper disposal'];
+      reuseIdeas = 'Use parts for building custom electronics.';
+      recycleIdeas = 'Recycle at certified e-waste centers.';
+      disposalIdeas = 'Avoid sending to landfills.';
+    } 
+    else if (input.includes('zinc') ||input.includes('galvanized')){
+        suggestions = ['Recycle at specialized metal recycling facilities', 'Repurpose for galvanization or DIY projects', 'Sell to scrap dealers'];
+        reuseIdeas = 'Repurpose zinc for coating or small construction projects.';
+        recycleIdeas = 'Recycle through facilities that process non-ferrous metals like zinc.';
+        disposalIdeas = 'Dispose of at certified metal recycling centers or scrap yards.';
+      }
+      else if (input.includes('geometry box') || input.includes('compass') || input.includes('scale') || input.includes('protractor')) {
+        suggestions = ['Donate to schools or students in need', 'Recycle plastic and metal parts', 'Repurpose for DIY projects'];
+        reuseIdeas = 'Use old geometry tools for creative or organizational purposes.';
+        recycleIdeas = 'Recycle through facilities that accept mixed materials like plastic and metal.';
+        disposalIdeas = 'Dispose of unusable items in mixed-material recycling bins if available.';
+      } 
+else if (input.includes('book') || input.includes('books')) {
+        suggestions = ['Donate to libraries, schools, or charities', 'Sell or exchange at second-hand bookshops', 'Recycle paper pages if damaged'];
+        reuseIdeas = 'Repurpose old books as decorative items or for crafts.';
+        recycleIdeas = 'Recycle paper through local recycling programs.';
+        disposalIdeas = 'Dispose of unusable books in paper recycling bins.';
+      } 
+      else if (input.includes('pencil') || input.includes('pencils')) {
+        suggestions = ['Repurpose for arts and crafts', 'Donate to schools or community centers', 'Compost wooden pencils if untreated'];
+        reuseIdeas = 'Use old pencils for sketching or creative DIY projects.';
+        recycleIdeas = 'Separate wooden and metal parts for recycling; compost untreated wood.';
+        disposalIdeas = 'Dispose of non-recyclable parts in general waste if not reusable.';
+      } 
+      
+      else if (input.includes('pen') || input.includes('pens')) {
+        suggestions = ['Refill and reuse if possible', 'Recycle through pen recycling programs', 'Avoid throwing in general waste bins'];
+        reuseIdeas = 'Use old pens for DIY projects or refill for extended use.';
+        recycleIdeas = 'Participate in recycling programs for plastic and metal components.';
+        disposalIdeas = 'Dispose of in designated collection centers for stationery recycling.';
+      } 
+else if (input.includes('paper') || input.includes('notebooks')) {
+        suggestions = ['Reuse for rough notes or crafts', 'Recycle through paper recycling programs', 'Avoid burning paper to reduce air pollution'];
+        reuseIdeas = 'Use one-sided paper for rough work or DIY crafts.';
+        recycleIdeas = 'Recycle through local paper recycling facilities.';
+        disposalIdeas = 'Dispose of shredded or soiled paper in compost or recycling bins.';
+      }
+
+    else if (input.includes('lead') ){
+        suggestions = ['Recycle at authorized hazardous material recycling centers', 'Repurpose for weights or shielding', 'Avoid improper disposal due to toxicity'];
+        reuseIdeas = 'Repurpose lead for applications like counterweights or radiation shielding.';
+        recycleIdeas = 'Recycle through certified facilities that handle hazardous materials like lead.';
+        disposalIdeas = 'Dispose of lead at designated hazardous waste collection points to prevent environmental contamination.';
+      }
+
+      else if (input.includes('rubber')) {
+        suggestions = ['Recycle into rubber products', 'Use in road construction', 'Donate for reuse in arts or crafts'];
+        reuseIdeas = 'Repurpose old rubber as floor mats or DIY crafts.';
+        recycleIdeas = 'Recycle through specialized rubber recycling facilities.';
+        disposalIdeas = 'Dispose of in designated waste collection centers.';}
+
+      else if (input.includes('kitchen waste') || input.includes('peel') || input.includes('spoiled') ||  input.includes('vegetable') 
+      || input.includes('fruit') ||  input.includes('flower') ||  input.includes('leaf') ||  input.includes('tree')
+      ||  input.includes('twing'))
+      {
+        suggestions = ['Compost for organic fertilizers', 'Feed for livestock (if safe)', 'Avoid dumping in non-compostable waste bins'];
+        reuseIdeas = 'Use vegetable peels for natural cleaning or DIY home remedies.';
+        recycleIdeas = 'Compost kitchen waste for nutrient-rich fertilizer.';
+        disposalIdeas = 'Dispose in organic waste bins for composting.';
+      }
+    else if (input.includes('hospital') || input.includes('syringe') || input.includes('medical') || input.includes('cotton balls') || input.includes('bandage') || input.includes('gauze') ||
+    input.includes('needle') || input.includes('scalpel') || input.includes('suture') || input.includes('surgical'))
+    {
+        suggestions = ['Use biohazard disposal methods', 'Partner with specialized waste disposal services', 'Ensure proper labeling of waste bins'];
+        reuseIdeas = 'Reuse medical supplies in controlled environments.';
+        recycleIdeas = 'Partner with hospitals for regulated recycling.';
+        disposalIdeas = 'Handle carefully and dispose of in medical waste bins.';
+        
+      } 
+      else if (input.includes('sanitary napkin') || input.includes('menstrual pad') || input.includes('hygiene product')) {
+    suggestions = [
+        'Use dedicated sanitary waste disposal units or incinerators.',
+        'Avoid flushing down the toilet to prevent blockages.',
+        'Educate others about safe disposal methods for hygiene products.'
+    ];
+    reuseIdeas = 'Reuse is not applicable for sanitary napkins. Focus on safe disposal.';
+    recycleIdeas = 'Explore new initiatives that recycle menstrual pads into compost or other materials.';
+    disposalIdeas = 'Dispose of in dedicated sanitary bins or use eco-friendly incinerators.';
+    }
+      
+      else if (input.includes('animal') || input.includes('dung') || input.includes('excreta')) {
+        suggestions = ['Use for biogas production', 'Compost for fertilizers', 'Avoid contaminating water sources'];
+        reuseIdeas = 'Use as natural compost for gardening.';
+        recycleIdeas = 'Process in biogas plants.';
+        disposalIdeas = 'Ensure safe composting away from water bodies.';
+        
+      } 
+      
+      else if (input.includes('wire') || input.includes('cable')) {
+  suggestions = [
+    'Repurpose wires for DIY projects or art',
+    'Recycle at dedicated e-waste recycling centers',
+    'Avoid disposing of wires in general waste bins to prevent environmental hazards'
+  ];
+  reuseIdeas = 'Reuse wires for minor electrical repairs or as ties for organizing items.';
+  recycleIdeas = 'Drop off wires and cables at e-waste recycling facilities.';
+  disposalIdeas = 'Ensure proper disposal by bundling wires neatly and avoiding general waste bins.';
+}
+
+else if (input.includes('iron') || input.includes('metal') || input.includes('steel') ||input.includes('rod') ||input.includes('iron rod')) {
+        suggestions = ['Recycle at metal recycling facilities', 'Repurpose for construction or DIY projects', 'Sell to scrap dealers'];
+        reuseIdeas = 'Repurpose old iron materials for home improvement or art projects.';
+        recycleIdeas = 'Recycle through authorized metal recycling centers.';
+        disposalIdeas = 'Dispose of at designated scrap yards or collection centers.';
+        
+}else if (input.includes('slipper') || input.includes('footwear')) {
+
+suggestions = [
+  'Donate wearable slippers or footwear to charities or shelters',
+  'Repurpose for garden padding or insulation purposes',
+  'Recycle at facilities specializing in rubber or synthetic materials'
+];
+
+reuseIdeas = 'Turn old slippers into floor protectors for furniture or DIY mats.';
+recycleIdeas = 'Look for recycling centers that handle rubber or synthetic materials.';
+disposalIdeas = 'Dispose of in landfill bins if recycling options are unavailable.';
+}
+
+else if (input.includes('rope')) {
+
+suggestions = [
+  'Donate good quality rope to farmers or community centers for reuse',
+  'Repurpose for home use, such as tying or crafting projects',
+  'Recycle at facilities that accept textiles or synthetic materials'
+];
+
+reuseIdeas = 'Use old ropes for crafting, gardening, or DIY storage solutions.';
+recycleIdeas = 'Recycle natural fiber ropes at compost facilities or synthetic ones at appropriate centers.';
+disposalIdeas = 'Dispose of in mixed waste bins if no other options are available.';
+}
+
+else if (input.includes('tooth brush') || input.includes('toothbrush')) {
+
+suggestions = [
+  'Repurpose old toothbrushes for cleaning hard-to-reach spots',
+  'Use as tools for arts and crafts projects',
+  'Recycle through programs like TerraCycle or designated plastic recyclers'
+];
+
+reuseIdeas = 'Use old toothbrushes for cleaning grout, jewelry, or kitchenware.';
+recycleIdeas = 'Participate in recycling programs like TerraCycle for oral care products.';
+disposalIdeas = 'Dispose of in plastic recycling bins if the material is recyclable, or in landfill bins otherwise.';
+}
+
+      else if (input.includes('clothing') || input.includes('fabric') || input.includes('polyester') || input.includes('wool') || 
+      input.includes('silk') || input.includes('cotton') ||input.includes('cloth') ||input.includes('t-shirt') ||input.includes('table cloth')) {
+        suggestions = ['Donate wearable clothes', 'Repurpose into cleaning rags', 'Recycle at fabric recycling centers'];
+        reuseIdeas = 'Transform old clothes into usable items.';
+        recycleIdeas = 'Recycle at dedicated textile recycling points.';
+        disposalIdeas = 'Avoid burning, as it releases harmful gases.';
+        
+      } else if (input.includes('industrial')) {
+        suggestions = ['Contact industrial waste management services', 'Follow hazardous waste disposal regulations', 'Reduce and reuse materials where possible'];
+        reuseIdeas = 'Repurpose suitable waste into secondary raw materials.';
+        recycleIdeas = 'Send to authorized recycling centers.';
+        disposalIdeas = 'Ensure safe and compliant disposal practices.';
+        }
+    else {
+      suggestions = ['Follow local disposal guidelines', 'Avoid littering', 'Educate others on proper waste management'];
+      reuseIdeas = 'Find creative ways to reuse items.';
+      recycleIdeas = 'Identify local recycling facilities.';
+      disposalIdeas = 'Dispose responsibly following local regulations.';
+    }
+
+    const displaySuggestions = (suggestions, reuseIdeas, recycleIdeas, disposalIdeas) => {
+      const suggestionsDiv = document.getElementById("suggestions");
+      suggestionsDiv.innerHTML = ""; 
+     
+      suggestions.forEach((suggestion) => {
+        const suggestionDiv = document.createElement("div");
+        suggestionDiv.className = "suggestion";
+        suggestionDiv.textContent = suggestion;
+        suggestionsDiv.appendChild(suggestionDiv);
+      });
+
+      
+      const actionButtons = document.getElementById("action-buttons");
+      actionButtons.style.display = "block";
+
+      
+      document.getElementById("reuse-button").onclick = () => displaySuggestion("Reuse", reuseIdeas);
+      document.getElementById("recycle-button").onclick = () => displaySuggestion("Recycle", recycleIdeas);
+      document.getElementById("disposal-button").onclick = () => displaySuggestion("Dispose", disposalIdeas);
+    };
+
+   
+    const displaySuggestion = (type, ideas) => {
+      const suggestionsDiv = document.getElementById("suggestions");
+      suggestionsDiv.innerHTML = `<h2>${type} Suggestions</h2><p>${ideas}</p>`;
+    };
+
+    displaySuggestions(suggestions, reuseIdeas, recycleIdeas, disposalIdeas);
+  };
+
+ 
+  document.addEventListener("DOMContentLoaded", () => {
+    document.getElementById("submit-upload").addEventListener("click", () => {
+      const fileInput = document.getElementById("file-upload");
+      const file = fileInput.files[0];
+      if (file) {
+        classifyImage(file);
+      } else {
+        alert("Please select an image file.");
+      }
+    });
+  });
+</script>
+</body>
+</html>  
